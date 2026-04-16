@@ -1,0 +1,66 @@
+services:
+  website-production:
+    build:
+      context: ./website
+      target: production
+    env_file:
+      - ./website/.env
+    networks:
+      - refuelmap
+
+  website-development:
+    build:
+      context: ./website
+      target: development
+    env_file:
+      - ./website/.env
+    volumes:
+      - ./website:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - refuelmap
+
+  backend-production:
+    build:
+      context: ./backend
+      target: production
+    env_file:
+      - ./backend/.env
+    networks:
+      - refuelmap
+      - refuelmap-backend
+
+  backend-development:
+    build:
+      context: ./backend
+      target: development
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "3001:3000"
+    networks:
+      - refuelmap
+      - refuelmap-backend
+
+  database:
+    image: postgres:17-alpine
+    env_file:
+      - ./backend/.env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - refuelmap-backend
+
+networks:
+  refuelmap:
+    external: true
+  refuelmap-backend:
+    driver: bridge
+
+volumes:
+  db-data:
