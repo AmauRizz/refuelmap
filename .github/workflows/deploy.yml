@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_actions_key
+          chmod 600 ~/.ssh/github_actions_key
+
+      - name: Add known hosts
+        run: |
+          ssh-keyscan -p "${{ secrets.VPS_PORT }}" -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Create website .env on VPS
+        run: |
+          ssh -p "${{ secrets.VPS_PORT }}" -i ~/.ssh/github_actions_key "${{ secrets.VPS_USER }}"@"${{ secrets.VPS_HOST }}" << 'EOF'
+            cat > /srv/docker/web/refuelmap/website/.env << ENVEOF
+          API_URL=${{ secrets.API_URL }}
+          ENVEOF
+            chmod 600 /srv/docker/web/refuelmap/website/.env
+          EOF
+
+      - name: Create backend .env on VPS
+        run: |
+          ssh -p "${{ secrets.VPS_PORT }}" -i ~/.ssh/github_actions_key "${{ secrets.VPS_USER }}"@"${{ secrets.VPS_HOST }}" << 'EOF'
+            cat > /srv/docker/web/refuelmap/backend/.env << ENVEOF
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          ENVEOF
+            chmod 600 /srv/docker/web/refuelmap/backend/.env
+          EOF
+
+      - name: Deploy
+        run: |
+          ssh -p "${{ secrets.VPS_PORT }}" -i ~/.ssh/github_actions_key "${{ secrets.VPS_USER }}"@"${{ secrets.VPS_HOST }}" \
+          "cd /srv/docker/web/refuelmap && git pull && docker compose up -d --build website-production backend-production database"
