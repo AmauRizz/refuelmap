@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
     imports: [
@@ -21,6 +22,14 @@ import { PrismaModule } from './prisma/prisma.module';
             inject: [ConfigService],
         }),
         PrismaModule,
+        HttpModule.registerAsync({
+            imports: [ConfigModule],
+            useFactory: (config: ConfigService) => ({
+                timeout: config.get('HTTP_TIMEOUT', 5000),
+                maxRedirects: 3,
+            }),
+            inject: [ConfigService],
+        }),
     ],
     controllers: [AppController],
     providers: [
