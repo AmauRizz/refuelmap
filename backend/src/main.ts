@@ -1,12 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from "@nestjs/config";
-import { ValidationPipe } from "@nestjs/common";
+import { ValidationPipe, Logger } from "@nestjs/common";
 import helmet from "helmet";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+      logger: ['error', 'warn', 'log', 'debug'],
+  });
   const configService = app.get(ConfigService);
+  const logger = new Logger('Bootstrap');
+  const port = configService.get<number>('PORT', 3000);
+
+  app.useLogger(
+      configService.get<string>('NODE_ENV', 'production') === 'production'
+          ? ['error', 'warn', 'log']
+          : ['error', 'warn', 'log', 'debug'],
+  );
 
   app.use(helmet());
 
@@ -26,8 +36,6 @@ async function bootstrap() {
         },
       }),
   );
-
-  const port = configService.get<number>('PORT', 3000);
 
   await app.listen(port);
 }
