@@ -16,4 +16,4 @@ CMD ["node", "dist/main.js"]
 
 FROM deps AS development
 COPY . .
-CMD ["npm", "run", "start:dev"]
+CMD ["sh", "-c", "npx prisma generate && npm run start:dev"]
