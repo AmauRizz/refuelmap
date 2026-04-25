@@ -6,6 +6,7 @@ import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { HttpModule } from '@nestjs/axios';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { HttpModule } from '@nestjs/axios';
             }),
             inject: [ConfigService],
         }),
+        ScheduleModule.forRoot(),
     ],
     controllers: [AppController],
     providers: [
