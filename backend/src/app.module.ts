@@ -7,6 +7,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SyncModule } from './sync/sync.module';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule';
             inject: [ConfigService],
         }),
         ScheduleModule.forRoot(),
+        SyncModule,
     ],
     controllers: [AppController],
     providers: [
