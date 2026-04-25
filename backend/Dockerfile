@@ -1,13 +1,19 @@
-FROM node:current-alpine3.23 AS base
-
+FROM node:lts-alpine AS deps
 WORKDIR /app
+COPY package*.json ./
+RUN npm ci
 
+FROM deps AS build
 COPY . .
-RUN npm install
-
-FROM base AS production
 RUN npm run build
+
+FROM node:lts-alpine AS production
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=build /app/dist ./dist
 CMD ["node", "dist/main.js"]
 
-FROM base AS development
+FROM deps AS development
+COPY . .
 CMD ["npm", "run", "start:dev"]
