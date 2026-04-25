@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule, CacheInterceptor } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
             }),
             inject: [ConfigService],
         }),
+        PrismaModule,
     ],
     controllers: [AppController],
     providers: [
